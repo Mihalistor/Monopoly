@@ -1,0 +1,32 @@
+2;0;Start
+1;1;Jeretova ulica;1000;1;700
+1;2;Balkanska ulica;1200;1;800
+1;3;Zagrebacka ulica;1400;1;900
+1;4;Zagrebacki kolodvor;2000;3;1000
+1;5;Decumanus;1600;2;1100
+2;6;Sansa
+1;7;Duga ulica;1800;2;1200
+2;8;Preskok
+1;9;Obala Lazareta;2100;4;1300
+1;10;Maksimirska ulica;2200;4;1400
+2;11;Sansa
+1;12;Rijecki kolodvor;2000;3;1000
+1;13;Ulica S. Radica;2400;5;1500
+1;14;Istarska ulica;2500;5;1600
+1;15;Kapucinska ulica;2600;5;1700
+2;16;Zatvor
+1;17;Zametska ulica;2700;6;2000
+1;18;Sibenska ulica;2800;6;2100
+1;19;Kalelarga;2900;6;2200
+1;20;Osjecki kolodvor;2000;3;1000
+1;21;Zrinska ulica;3100;7;2400
+2;22;Sansa
+1;23;Forum;3200;7;2500
+2;24;Pokupi
+1;25;Trg bana Jelacica;3300;8;2600
+1;26;Korzo;3400;8;2700
+1;27;Prokurativa;3600;8;2900
+1;28;Varazdinski kolodvor;2000;3;1000
+2;29;Sansa
+1;30;Stradun;3800;9;3000
+1;31;Ilica;4000;9;3100
