@@ -30,7 +30,6 @@ public class GeneratorBrojeva {
     
     public int baciKockicu(){
         int slucajniBroj = generator.nextInt(6) + 1;
-        System.out.println("slucajni broj: " + slucajniBroj);
         return slucajniBroj;
     }
 

@@ -15,7 +15,7 @@ public interface PoljeBuilder {
     PoljeBuilder setIdPolja(final Integer id);
     PoljeBuilder setNaziv(final String naziv);
     PoljeBuilder setCijena(final Integer cijena);
-    PoljeBuilder setIdVlasnik(final Integer idVlasnika);
+    PoljeBuilder setImeVlasnik(final String imeVlasnika);
     PoljeBuilder setIdGrupe(final Integer idGrupe);
     PoljeBuilder setSansa(final Integer sansa);
     PoljeBuilder setIznosNaplate(final Integer iznos);

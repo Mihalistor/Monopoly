@@ -35,12 +35,6 @@ public class PoljeBuilderImpl implements PoljeBuilder {
     }
 
     @Override
-    public PoljeBuilder setIdVlasnik(Integer idVlasnika) {
-        polje.setIdVlasnika(idVlasnika);
-        return this;
-    }
-
-    @Override
     public PoljeBuilder setIdGrupe(Integer idGrupe) {
         polje.setIdGrupe(idGrupe);
         return this;
@@ -61,6 +55,12 @@ public class PoljeBuilderImpl implements PoljeBuilder {
     @Override
     public PoljeBuilder setIdPolja(Integer id) {
         polje.setIdPolja(id);
+        return this;
+    }
+
+    @Override
+    public PoljeBuilder setImeVlasnik(String imeVlasnika) {
+        polje.setImeVlasnika(imeVlasnika);
         return this;
     }
 

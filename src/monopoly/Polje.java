@@ -14,20 +14,12 @@ public class Polje {
     private Integer idPolja;
     private String naziv;
     private Integer cijena;
-    private Integer idVlasnika;
+    private String imeVlasnika;
     private Integer idGrupe;
     private Integer sansa;
     private Integer iznosNaplate;
 
     public Polje() {
-    }
-
-    public Integer getIdVlasnika() {
-        return idVlasnika;
-    }
-
-    public void setIdVlasnika(Integer idVlasnika) {
-        this.idVlasnika = idVlasnika;
     }
 
     public String getNaziv() {
@@ -76,6 +68,14 @@ public class Polje {
 
     public void setIdPolja(Integer idPolja) {
         this.idPolja = idPolja;
+    }
+
+    public String getImeVlasnika() {
+        return imeVlasnika;
+    }
+
+    public void setImeVlasnika(String imeVlasnika) {
+        this.imeVlasnika = imeVlasnika;
     }
         
 }
