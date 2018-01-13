@@ -3,6 +3,7 @@ package monopoly;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -28,6 +29,11 @@ public class Igrac4 extends Agent {
     GeneratorBrojeva gb = GeneratorBrojeva.getInstance();
 
     protected void setup() {
+        addBehaviour(new OneShotBehaviour() {
+            public void action() {
+                addBehaviour(new PrijaviSe());
+            }
+        });
         MessageTemplate query = MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF);
         addBehaviour(new CyclicBehaviour(this) {
             public void action() {
@@ -106,15 +112,15 @@ public class Igrac4 extends Agent {
 
         public void provjeriMjesto(Polje polje) {
             if (polje.getImeVlasnika() == null) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - nema vlasnika") ;
+                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
                 if (provjeriNovcanik(polje)) {
                     kupiMjesto(polje);
                 }
             } else if (polje.getImeVlasnika().equals(dajIme())) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 posjetiSvojeMjesto(polje);
             } else {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 platiPosjetu(polje);
             }
         }
@@ -141,6 +147,7 @@ public class Igrac4 extends Agent {
 
         public void platiPosjetu(Polje polje) {
             if (novci < polje.getIznosNaplate()) {
+                System.out.println("Stanje na racunu: " + novci);
                 bankrot();
             } else {
                 novci -= polje.getIznosNaplate();
@@ -149,8 +156,8 @@ public class Igrac4 extends Agent {
                 posaljiNovce(polje.getImeVlasnika(), "Naplata " + Integer.toString(polje.getIznosNaplate()));
             }
         }
-        
-        public void posaljiNovce(String vlasnik, String iznos){
+
+        public void posaljiNovce(String vlasnik, String iznos) {
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
             poruka.addReceiver(new AID(vlasnik, AID.ISLOCALNAME));
             poruka.setContent(iznos);
@@ -206,7 +213,10 @@ public class Igrac4 extends Agent {
         }
 
         public void bankrot() {
-            System.out.println("BANKROTIRAO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("BANKROTIRAO");
+            Banka.igrac.remove(Banka.trenutniIgrac);
+            Banka.trenutniIgrac--;
+            
         }
 
         public void preskok() {
@@ -227,12 +237,18 @@ public class Igrac4 extends Agent {
             System.out.println("Novo stanje na racunu: " + novci);
             Banka.novci = 0;
         }
-        
+
         public void sljedeciIgrac() {
             System.out.println("gotov sam -> moze sljedeci");
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
-            poruka.addReceiver(new AID("Pero", AID.ISLOCALNAME));
-            poruka.setContent("Pero, ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
+            if(Banka.trenutniIgrac == Banka.igrac.size()-1){
+                Banka.trenutniIgrac = 0;
+            } else {
+                Banka.trenutniIgrac++;
+            }
+            String sljedeciIgrac = Banka.igrac.get(Banka.trenutniIgrac);
+            poruka.addReceiver(new AID(sljedeciIgrac, AID.ISLOCALNAME));
+            poruka.setContent(sljedeciIgrac + ", ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
             System.out.println("------------------------------------------------------------------------");
             try {
                 sleep(4000);
@@ -242,24 +258,44 @@ public class Igrac4 extends Agent {
             send(poruka);
         }
 
-        public String dajIme(){
+        public String dajIme() {
             return getAID().getLocalName();
         }
     }
-    
-        public class PrihvatiNaplatu extends SequentialBehaviour {
-        
+
+    public class PrihvatiNaplatu extends SequentialBehaviour {
+
         ACLMessage msg;
 
         public PrihvatiNaplatu(ACLMessage msg) {
             this.msg = msg;
         }
-        
+
         @Override
         public void onStart() {
-           Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ")+1, msg.getContent().length())); 
+            Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ") + 1, msg.getContent().length()));
             novci += iznos;
-        }   
+        }
+    }
+
+    public class PrijaviSe extends SequentialBehaviour {
+
+        @Override
+        public void onStart() {
+            try {
+                sleep(3000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Igrac2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
+            poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
+            poruka.setContent("Prijavljujem se u igru: " + dajIme());
+            send(poruka);
+        }
+
+        public String dajIme() {
+            return getAID().getLocalName();
+        }
     }
 
     public long getNovci() {

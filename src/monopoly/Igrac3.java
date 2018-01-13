@@ -3,6 +3,7 @@ package monopoly;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -28,6 +29,11 @@ public class Igrac3 extends Agent {
     GeneratorBrojeva gb = GeneratorBrojeva.getInstance();
 
     protected void setup() {
+        addBehaviour(new OneShotBehaviour() {
+            public void action() {
+                addBehaviour(new PrijaviSe());
+            }
+        });
         MessageTemplate query = MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF);
         addBehaviour(new CyclicBehaviour(this) {
             public void action() {
@@ -141,6 +147,7 @@ public class Igrac3 extends Agent {
 
         public void platiPosjetu(Polje polje) {
             if (novci < polje.getIznosNaplate()) {
+                System.out.println("Stanje na racunu: " + novci);
                 bankrot();
             } else {
                 novci -= polje.getIznosNaplate();
@@ -206,7 +213,9 @@ public class Igrac3 extends Agent {
         }
 
         public void bankrot() {
-            System.out.println("BANKROTIRAO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("BANKROTIRAO");
+            Banka.igrac.remove(Banka.trenutniIgrac);
+            Banka.trenutniIgrac--;
         }
 
         public void preskok() {
@@ -231,8 +240,14 @@ public class Igrac3 extends Agent {
         public void sljedeciIgrac() {
             System.out.println("gotov sam -> moze sljedeci");
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
-            poruka.addReceiver(new AID("Bruno", AID.ISLOCALNAME));
-            poruka.setContent("Bruno, ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
+            if(Banka.trenutniIgrac == Banka.igrac.size()-1){
+                Banka.trenutniIgrac = 0;
+            } else {
+                Banka.trenutniIgrac++;
+            }
+            String sljedeciIgrac = Banka.igrac.get(Banka.trenutniIgrac);
+            poruka.addReceiver(new AID(sljedeciIgrac, AID.ISLOCALNAME));
+            poruka.setContent(sljedeciIgrac + ", ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
             System.out.println("------------------------------------------------------------------------");
             try {
                 sleep(4000);
@@ -258,8 +273,28 @@ public class Igrac3 extends Agent {
 
         @Override
         public void onStart() {
-            Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ")+1, msg.getContent().length()));
+            Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ") + 1, msg.getContent().length()));
             novci += iznos;
+        }
+    }
+
+    public class PrijaviSe extends SequentialBehaviour {
+
+        @Override
+        public void onStart() {
+            try {
+                sleep(2000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Igrac2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
+            poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
+            poruka.setContent("Prijavljujem se u igru: " + dajIme());
+            send(poruka);
+        }
+
+        public String dajIme() {
+            return getAID().getLocalName();
         }
     }
 
