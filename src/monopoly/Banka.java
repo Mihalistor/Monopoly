@@ -26,7 +26,7 @@ public class Banka extends Agent{
         poruka.addReceiver(new AID("Pero", AID.ISLOCALNAME));
         poruka.setContent("Igra moze poceti");
         send(poruka);
-        System.out.println("-----------------------------------------------");
+        System.out.println("------------------------------------------------------------------------");
         
     }
     

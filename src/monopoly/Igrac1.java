@@ -102,15 +102,15 @@ public class Igrac1 extends Agent {
 
         public void provjeriMjesto(Polje polje) {
             if (polje.getImeVlasnika() == null) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + " - nema vlasnika") ;
+                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - nema vlasnika") ;
                 if (provjeriNovcanik(polje)) {
                     kupiMjesto(polje);
                 }
             } else if (polje.getImeVlasnika().equals(dajIme())) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 posjetiSvojeMjesto(polje);
             } else {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 platiKaznu(polje);
             }
         }
@@ -221,7 +221,7 @@ public class Igrac1 extends Agent {
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
             poruka.addReceiver(new AID("Ivo", AID.ISLOCALNAME));
             poruka.setContent("Ivo, ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
-            System.out.println("-----------------------------------------------");
+            System.out.println("------------------------------------------------------------------------");
             try {
                 sleep(4000);
             } catch (InterruptedException ex) {
