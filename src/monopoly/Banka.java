@@ -18,19 +18,16 @@ import java.util.logging.Logger;
  */
 public class Banka extends Agent{
     
+    public static Integer novci = 0;
+    
     protected void setup() {
         Mapa mapa = Mapa.getInstance();
         mapa.postaviMapu();
-        System.out.println("My name is: " + getAID().getLocalName());
+        System.out.println("MONOPOLY: " + getAID().getLocalName());
         System.out.println("POCETAK IGRE");
         ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
         poruka.addReceiver(new AID("Pero", AID.ISLOCALNAME));
-        poruka.setContent("ovo je tekst banke za pocetak igre");
-        try {
-            sleep(3000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Banka.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        poruka.setContent("Igra moze poceti");
         send(poruka);
         System.out.println("-----------------------------------------------");
         

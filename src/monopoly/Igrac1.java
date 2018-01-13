@@ -21,7 +21,9 @@ public class Igrac1 extends Agent {
     private Integer idIgraca = 1;
     private long novci = 15000;
     private Integer pozicija = 0;
+    Integer stop = 0;
     private List<Polje> vlastitaMjesta = new ArrayList<>();
+    Integer brojacSestica = 0;
 
     Mapa m = Mapa.getInstance();
     GeneratorBrojeva gb = GeneratorBrojeva.getInstance();
@@ -32,8 +34,8 @@ public class Igrac1 extends Agent {
             public void action() {
                 ACLMessage msg = receive(query);
                 if (msg != null) {
-                    System.out.println("My name is: " + getAID().getLocalName());
-                    System.out.println("My id is: " + idIgraca);
+                    System.out.println("Ja sam: " + getAID().getLocalName() + " i moj ID je: " + idIgraca);
+                    System.out.println("Na računu imam: " + novci);
                     addBehaviour(new IgrajMonopoly(myAgent, msg));
                 }
                 block();
@@ -52,29 +54,42 @@ public class Igrac1 extends Agent {
 
         @Override
         public void onStart() {
-            System.out.println("citam poruku: " + msg.getContent());
-            System.out.println("posiljatelj: " + msg.getSender().getLocalName());
-            tvojPotez();
+            // System.out.println("citam poruku: " + msg.getContent());
+            // System.out.println("posiljatelj: " + msg.getSender().getLocalName());
+            int kockica = gb.baciKockicu();
+            if (kockica == 6) {
+                brojacSestica++;
+            }
+            if (brojacSestica <= 3) {
+                tvojPotez(kockica);
+            } else {
+                brojacSestica = 0;
+                sljedeciIgrac();
+            }
         }
 
-        public void tvojPotez() {
-            int kockica = gb.baciKockicu();
-            System.out.println("IGRA IGRAC: " + getAID().getLocalName() + " -> KOCKICA: " + kockica);
-            pozicija = provjeriPoziciju(pozicija, kockica);
-            Polje polje = m.getMapa().get(pozicija);
-            provjeriPolje(polje, idIgraca);
-            if (kockica != 6) {
-                sljedeciIgrac();
+        public void tvojPotez(Integer kockica) {
+            if (stop == 0) {
+                System.out.println("IGRA IGRAC: " + getAID().getLocalName() + " -> KOCKICA: " + kockica);
+                pozicija = provjeriPoziciju(pozicija, kockica);
+                Polje polje = m.getMapa().get(pozicija);
+                provjeriPolje(polje, idIgraca);
+                if (kockica != 6) {
+                    sljedeciIgrac();
+                } else {
+                    onStart();
+                }
             } else {
-                tvojPotez();
+                System.out.println("IGRAC: " + getAID().getLocalName() + " PAUZIRA JOŠ: " + stop + " KRUG");
+                stop--;
+                sljedeciIgrac();
             }
         }
 
         public void sljedeciIgrac() {
-            System.out.println("sljedeci igrac moze igrati -> Ivo");
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
             poruka.addReceiver(new AID("Ivo", AID.ISLOCALNAME));
-            poruka.setContent("ovo je tekst od Pero");
+            poruka.setContent("Ivo, ja sam zavrsio. Mozes bacati kockicu. Pero");
             System.out.println("-----------------------------------------------");
             try {
                 sleep(4000);
@@ -124,7 +139,7 @@ public class Igrac1 extends Agent {
         }
 
         public Boolean provjeriNovcanik(Polje polje, Integer id) {
-            if(novci < polje.getCijena()){
+            if (novci < polje.getCijena()) {
                 System.out.println("NEMAM NOVACA");
                 System.out.println("Stanje na racunu: " + novci);
                 return false;
@@ -133,9 +148,11 @@ public class Igrac1 extends Agent {
         }
 
         public void kupiMjesto(Polje polje, Integer id) {
+            novci -= polje.getCijena();
             polje.setIdVlasnika(id);
             vlastitaMjesta.add(polje);
             System.out.println("KUPIO SAM MJESTO: " + polje.getNaziv());
+            System.out.println("Novo stanje na racunu: " + novci);
         }
 
         public void posjetiSvojeMjesto(Polje polje) {
@@ -144,13 +161,14 @@ public class Igrac1 extends Agent {
 
         public void platiKaznu(Polje polje, Integer id) {
             //todo posalji novac vlasniku
-            if(novci<polje.getIznosNaplate()){
+            if (novci < polje.getIznosNaplate()) {
                 System.out.println("BANKROT - IZGUBIO SI");
             } else {
                 novci -= polje.getIznosNaplate();
-                System.out.println("PLATI KAZNU OD: " + polje.getIznosNaplate() + ", IGRAČU: " + polje.getIdVlasnika());
+                System.out.println("PLATIO KAZNU OD: " + polje.getIznosNaplate() + ", IGRAČU: " + polje.getIdVlasnika());
+                System.out.println("Novo stanje na racunu: " + novci);
             }
-            
+
         }
 
         public void provjeriNeMjesto(Polje polje, Integer id) {
@@ -171,15 +189,9 @@ public class Igrac1 extends Agent {
         }
 
         public void sansa(Integer id) {
-            Sanse sansa = dajSansu(m.getListaSansi());
-            izvrsiSansu(sansa, id);
-            System.out.println(sansa.getOpis());
-        }
-
-        public Sanse dajSansu(List<Sanse> lista) {
             int brojSanse = gb.dajRandomSansu();
-            Sanse s = lista.get(brojSanse);
-            return s;
+            Sanse sansa = m.getListaSansi().get(brojSanse);
+            izvrsiSansu(sansa, id);
         }
 
         public void izvrsiSansu(Sanse sansa, Integer id) {
@@ -187,24 +199,32 @@ public class Igrac1 extends Agent {
                 case 1:
                     System.out.println(sansa.getOpis());
                     pozicija += sansa.getVrijednost();
+                    tvojPotez(0);
                     break;
                 case 2:
                     System.out.println(sansa.getOpis());
                     novci += sansa.getVrijednost();
+                    if (sansa.getVrijednost() < 0) {
+                        Banka.novci += Math.abs(sansa.getVrijednost());
+                    }
                     break;
             }
         }
 
         public void preskok() {
             System.out.println("Cekaj 1 krug");
+            stop = 1;
         }
 
         public void zatvor() {
             System.out.println("U zatvoru si. Cekaj 3 kruga");
+            stop = 3;
         }
 
         public void pokupiNovce() {
             System.out.println("Pokupi lovu iz banke");
+            novci += Banka.novci;
+            Banka.novci = 0;
         }
 
     }
