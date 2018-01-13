@@ -34,9 +34,8 @@ public class Igrac1 extends Agent {
             public void action() {
                 ACLMessage msg = receive(query);
                 if (msg != null) {
-                    System.out.println("Ja sam: " + getAID().getLocalName() + " i moj ID je: " + idIgraca);
-                    System.out.println("Na računu imam: " + novci);
-                    addBehaviour(new IgrajMonopoly(myAgent, msg));
+                    System.out.println("Ja sam: " + getAID().getLocalName() + ". Na računu imam: " + novci);
+                    addBehaviour(new IgrajMonopoly());
                 }
                 block();
             }
@@ -45,17 +44,11 @@ public class Igrac1 extends Agent {
 
     public class IgrajMonopoly extends SequentialBehaviour {
 
-        ACLMessage msg;
-
-        public IgrajMonopoly(Agent a, ACLMessage msg) {
-            super(a);
-            this.msg = msg;
+        public IgrajMonopoly() {
         }
 
         @Override
         public void onStart() {
-            // System.out.println("citam poruku: " + msg.getContent());
-            // System.out.println("posiljatelj: " + msg.getSender().getLocalName());
             int kockica = gb.baciKockicu();
             if (kockica == 6) {
                 brojacSestica++;
@@ -70,7 +63,7 @@ public class Igrac1 extends Agent {
 
         public void tvojPotez(Integer kockica) {
             if (stop == 0) {
-                System.out.println("IGRA IGRAC: " + getAID().getLocalName() + " -> KOCKICA: " + kockica);
+                System.out.println("Bacio sam kockicu i dobio: " + kockica);
                 pozicija = provjeriPoziciju(pozicija, kockica);
                 Polje polje = m.getMapa().get(pozicija);
                 provjeriPolje(polje, idIgraca);
@@ -80,24 +73,10 @@ public class Igrac1 extends Agent {
                     onStart();
                 }
             } else {
-                System.out.println("IGRAC: " + getAID().getLocalName() + " PAUZIRA JOŠ: " + stop + " KRUG");
+                System.out.println("Pauziram jos: " + stop + " krug/a");
                 stop--;
                 sljedeciIgrac();
             }
-        }
-
-        public void sljedeciIgrac() {
-            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
-            poruka.addReceiver(new AID("Ivo", AID.ISLOCALNAME));
-            poruka.setContent("Ivo, ja sam zavrsio. Mozes bacati kockicu. Pero");
-            System.out.println("-----------------------------------------------");
-            try {
-                sleep(4000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            send(poruka);
-
         }
 
         public int provjeriPoziciju(int pozicija, int kockica) {
@@ -112,13 +91,12 @@ public class Igrac1 extends Agent {
         }
 
         public void noviKrug() {
-            System.out.println("NOVI KRUG");
             novci += 5000;
-            System.out.println("Igrac sada ima ukupno: " + novci);
+            System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
         }
 
         public void provjeriPolje(Polje polje, Integer id) {
-            System.out.println("POLJE: " + polje.getNaziv());
+            System.out.println("Dosao sam na: " + polje.getNaziv() + " - vlasnik: " + polje.getIdVlasnika());
             if (polje.getIdGrupe() != null) {
                 provjeriMjesto(polje, id);
             } else {
@@ -140,8 +118,7 @@ public class Igrac1 extends Agent {
 
         public Boolean provjeriNovcanik(Polje polje, Integer id) {
             if (novci < polje.getCijena()) {
-                System.out.println("NEMAM NOVACA");
-                System.out.println("Stanje na racunu: " + novci);
+                System.out.println("Nemam novaca za kupnju!");
                 return false;
             }
             return true;
@@ -151,22 +128,22 @@ public class Igrac1 extends Agent {
             novci -= polje.getCijena();
             polje.setIdVlasnika(id);
             vlastitaMjesta.add(polje);
-            System.out.println("KUPIO SAM MJESTO: " + polje.getNaziv());
+            System.out.println("Kupio sam mjesto: " + polje.getNaziv());
             System.out.println("Novo stanje na racunu: " + novci);
         }
 
         public void posjetiSvojeMjesto(Polje polje) {
-            System.out.println("POSJETIO SAM KUPLJENO MJESTO: " + polje.getNaziv());
+            System.out.println("Posjetio sam svoje mjesto: " + polje.getNaziv());
         }
 
         public void platiKaznu(Polje polje, Integer id) {
-            //todo posalji novac vlasniku
             if (novci < polje.getIznosNaplate()) {
-                System.out.println("BANKROT - IZGUBIO SI");
+                bankrot();
             } else {
                 novci -= polje.getIznosNaplate();
-                System.out.println("PLATIO KAZNU OD: " + polje.getIznosNaplate() + ", IGRAČU: " + polje.getIdVlasnika());
+                System.out.println("Platio sam kaznu od: " + polje.getIznosNaplate() + ", igraču: " + polje.getIdVlasnika());
                 System.out.println("Novo stanje na racunu: " + novci);
+                //todo posalji novac vlasniku
             }
 
         }
@@ -197,27 +174,36 @@ public class Igrac1 extends Agent {
         public void izvrsiSansu(Sanse sansa, Integer id) {
             switch (sansa.getIdSanse()) {
                 case 1:
-                    System.out.println(sansa.getOpis());
+                    System.out.println("SANSA: " + sansa.getOpis());
                     pozicija += sansa.getVrijednost();
                     tvojPotez(0);
                     break;
                 case 2:
-                    System.out.println(sansa.getOpis());
-                    novci += sansa.getVrijednost();
+                    System.out.println("SANSA: " + sansa.getOpis());
                     if (sansa.getVrijednost() < 0) {
                         Banka.novci += Math.abs(sansa.getVrijednost());
+                        novci -= Math.abs(sansa.getVrijednost());
+                        if (novci <= 0) {
+                            bankrot();
+                        }
+                    } else {
+                        novci += sansa.getVrijednost();
                     }
                     break;
             }
         }
 
+        public void bankrot() {
+            System.out.println("BANKROTIRAO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
+
         public void preskok() {
-            System.out.println("Cekaj 1 krug");
+            System.out.println("Cekaj jedan krug");
             stop = 1;
         }
 
         public void zatvor() {
-            System.out.println("U zatvoru si. Cekaj 3 kruga");
+            System.out.println("U zatvoru. Cekaj da prodju tri kruga");
             stop = 3;
         }
 
@@ -225,6 +211,20 @@ public class Igrac1 extends Agent {
             System.out.println("Pokupi lovu iz banke");
             novci += Banka.novci;
             Banka.novci = 0;
+        }
+
+        public void sljedeciIgrac() {
+            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
+            poruka.addReceiver(new AID("Ivo", AID.ISLOCALNAME));
+            poruka.setContent("Ivo, ja sam zavrsio. Mozes bacati kockicu. Pero");
+            System.out.println("-----------------------------------------------");
+            try {
+                sleep(4000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            send(poruka);
+
         }
 
     }
