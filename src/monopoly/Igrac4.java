@@ -33,8 +33,12 @@ public class Igrac4 extends Agent {
             public void action() {
                 ACLMessage msg = receive(query);
                 if (msg != null) {
-                    System.out.println("Ja sam: " + getAID().getLocalName() + ". Na računu imam: " + novci);
-                    addBehaviour(new IgrajMonopoly());
+                    if (msg.getContent().contains("Naplata")) {
+                        addBehaviour(new PrihvatiNaplatu(msg));
+                    } else {
+                        System.out.println("Ja sam: " + getAID().getLocalName() + ". Na računu imam: " + novci);
+                        addBehaviour(new IgrajMonopoly());
+                    }
                 }
                 block();
             }
@@ -111,7 +115,7 @@ public class Igrac4 extends Agent {
                 posjetiSvojeMjesto(polje);
             } else {
                 System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: "+ polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
-                platiKaznu(polje);
+                platiPosjetu(polje);
             }
         }
 
@@ -135,16 +139,22 @@ public class Igrac4 extends Agent {
             System.out.println("Posjetio sam svoje mjesto: " + polje.getNaziv());
         }
 
-        public void platiKaznu(Polje polje) {
+        public void platiPosjetu(Polje polje) {
             if (novci < polje.getIznosNaplate()) {
                 bankrot();
             } else {
                 novci -= polje.getIznosNaplate();
-                System.out.println("Platio sam kaznu od: " + polje.getIznosNaplate() + ", igraču: " + polje.getImeVlasnika());
+                System.out.println("Platio sam posjetu od: " + polje.getIznosNaplate() + ", igraču: " + polje.getImeVlasnika());
                 System.out.println("Novo stanje na racunu: " + novci);
-                //todo posalji novac vlasniku
+                posaljiNovce(polje.getImeVlasnika(), "Naplata " + Integer.toString(polje.getIznosNaplate()));
             }
-
+        }
+        
+        public void posaljiNovce(String vlasnik, String iznos){
+            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
+            poruka.addReceiver(new AID(vlasnik, AID.ISLOCALNAME));
+            poruka.setContent(iznos);
+            send(poruka);
         }
 
         public void provjeriNeMjesto(Polje polje) {
@@ -201,11 +211,13 @@ public class Igrac4 extends Agent {
 
         public void preskok() {
             System.out.println("Dosao sam na PRESKOK. Cekam jedan krug");
+            brojacSestica = 0;
             stop = 1;
         }
 
         public void zatvor() {
             System.out.println("Dosao sam u ZATVOR. Cekam tri kruga");
+            brojacSestica = 0;
             stop = 3;
         }
 
@@ -233,6 +245,21 @@ public class Igrac4 extends Agent {
         public String dajIme(){
             return getAID().getLocalName();
         }
+    }
+    
+        public class PrihvatiNaplatu extends SequentialBehaviour {
+        
+        ACLMessage msg;
+
+        public PrihvatiNaplatu(ACLMessage msg) {
+            this.msg = msg;
+        }
+        
+        @Override
+        public void onStart() {
+           Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ")+1, msg.getContent().length())); 
+            novci += iznos;
+        }   
     }
 
     public long getNovci() {
