@@ -10,6 +10,7 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.wrapper.StaleProxyException;
 import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,21 @@ public class Banka extends Agent {
         poruka.setContent("Igra moze poceti");
         send(poruka);
         System.out.println("------------------------------------------------------------------------");
+
+        addBehaviour(new CyclicBehaviour(this) {
+            public void action() {
+                ACLMessage msg = receive(query);
+                if (msg != null) {
+                    if (msg.getContent().contains("Pobjednik")) {
+                        System.out.println(msg.getContent() + ": " + msg.getSender().getLocalName());
+                        System.out.println("KRAJ IGRE");
+                        doDelete();
+                        System.exit(0);
+                    }
+                }
+                block();
+            }
+        });
 
     }
 

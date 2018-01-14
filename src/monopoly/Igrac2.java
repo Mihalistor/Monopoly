@@ -203,7 +203,7 @@ public class Igrac2 extends Agent {
                         Banka.novci += Math.abs(sansa.getVrijednost());
                         novci -= Math.abs(sansa.getVrijednost());
                         System.out.println("Novo stanje na racunu: " + novci);
-                        if (novci <= 0) {       
+                        if (novci <= 0) {
                             bankrot();
                         }
                     } else {
@@ -244,7 +244,7 @@ public class Igrac2 extends Agent {
         public void sljedeciIgrac() {
             System.out.println("gotov sam -> moze sljedeci");
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
-            if(Banka.trenutniIgrac == Banka.igrac.size()-1){
+            if (Banka.trenutniIgrac == Banka.igrac.size() - 1) {
                 Banka.trenutniIgrac = 0;
             } else {
                 Banka.trenutniIgrac++;
@@ -292,16 +292,18 @@ public class Igrac2 extends Agent {
             send(poruka);
         }
     }
-    
+
     public String dajIme() {
-            return getAID().getLocalName();
-        }
-    
-        public void provjeriIgrace() {
+        return getAID().getLocalName();
+    }
+
+    public void provjeriIgrace() {
         if (Banka.igrac.size() == 1) {
-            System.out.println("POBJEDNIK: " + dajIme());
+            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
+            poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
+            poruka.setContent("Pobjednik");
+            send(poruka);
             doDelete();
-            System.exit(0);
         }
     }
 

@@ -294,9 +294,11 @@ public class Igrac1 extends Agent {
     
     public void provjeriIgrace(){
         if(Banka.igrac.size()==1){
-            System.out.println("POBJEDNIK: " + dajIme());
+            ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
+            poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
+            poruka.setContent("Pobjednik");
+            send(poruka);
             doDelete();
-            System.exit(0);
         }
     }
 
