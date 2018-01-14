@@ -31,7 +31,6 @@ public class Banka extends Agent {
         mapa.postaviMapu();
         System.out.println("MONOPOLY: " + getAID().getLocalName());
         System.out.println("Cekam 7 sekundi na prijavu igraca...");
-        // cekaj prijave
         MessageTemplate query = MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF);
         int counter = 0;
         while (counter < 7) {
@@ -39,7 +38,6 @@ public class Banka extends Agent {
             if (msg != null) {
                 System.out.println("Dosla je prijava: " + msg.getContent());
                 igrac.add(msg.getContent().substring(msg.getContent().lastIndexOf(" ") + 1, msg.getContent().length()));
-                System.out.println("size: " + igrac.size());
             }
             try {
                 sleep(1000);

@@ -24,6 +24,7 @@ public class Igrac2 extends Agent {
     Integer stop = 0;
     private List<Polje> vlastitaMjesta = new ArrayList<>();
     Integer brojacSestica = 0;
+    Boolean bankrotirao = false;
 
     Mapa m = Mapa.getInstance();
     GeneratorBrojeva gb = GeneratorBrojeva.getInstance();
@@ -42,6 +43,7 @@ public class Igrac2 extends Agent {
                     if (msg.getContent().contains("Naplata")) {
                         addBehaviour(new PrihvatiNaplatu(msg));
                     } else {
+                        provjeriIgrace();
                         System.out.println("Ja sam: " + getAID().getLocalName() + ". Na računu imam: " + novci);
                         addBehaviour(new IgrajMonopoly());
                     }
@@ -58,7 +60,7 @@ public class Igrac2 extends Agent {
 
         @Override
         public void onStart() {
-            if (stop == 0) {
+            if (stop == 0 && !bankrotirao) {
                 int kockica = gb.baciKockicu();
                 if (kockica == 6) {
                     brojacSestica++;
@@ -98,7 +100,7 @@ public class Igrac2 extends Agent {
         }
 
         public void noviKrug() {
-            novci += 5000;
+            novci += 3000;
             System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
         }
 
@@ -147,7 +149,7 @@ public class Igrac2 extends Agent {
 
         public void platiPosjetu(Polje polje) {
             if (novci < polje.getIznosNaplate()) {
-                System.out.println("Stanje na racunu: " + novci);
+                System.out.println("Stanje na racunu: " + novci + ", iznos naplate: " + polje.getIznosNaplate());
                 bankrot();
             } else {
                 novci -= polje.getIznosNaplate();
@@ -200,8 +202,8 @@ public class Igrac2 extends Agent {
                     if (sansa.getVrijednost() < 0) {
                         Banka.novci += Math.abs(sansa.getVrijednost());
                         novci -= Math.abs(sansa.getVrijednost());
-                        if (novci <= 0) {
-                            System.out.println("Novo stanje na racunu: " + novci);
+                        System.out.println("Novo stanje na racunu: " + novci);
+                        if (novci <= 0) {       
                             bankrot();
                         }
                     } else {
@@ -216,6 +218,8 @@ public class Igrac2 extends Agent {
             System.out.println("BANKROTIRAO");
             Banka.igrac.remove(Banka.trenutniIgrac);
             Banka.trenutniIgrac--;
+            bankrotirao = true;
+            doDelete();
         }
 
         public void preskok() {
@@ -250,15 +254,11 @@ public class Igrac2 extends Agent {
             poruka.setContent(sljedeciIgrac + ", ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
             System.out.println("------------------------------------------------------------------------");
             try {
-                sleep(4000);
+                sleep(1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
             }
             send(poruka);
-        }
-
-        public String dajIme() {
-            return getAID().getLocalName();
         }
     }
 
@@ -291,9 +291,17 @@ public class Igrac2 extends Agent {
             poruka.setContent("Prijavljujem se u igru: " + dajIme());
             send(poruka);
         }
-
-        public String dajIme() {
+    }
+    
+    public String dajIme() {
             return getAID().getLocalName();
+        }
+    
+        public void provjeriIgrace() {
+        if (Banka.igrac.size() == 1) {
+            System.out.println("POBJEDNIK: " + dajIme());
+            doDelete();
+            System.exit(0);
         }
     }
 

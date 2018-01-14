@@ -24,15 +24,16 @@ public class Igrac1 extends Agent {
     Integer stop = 0;
     private List<Polje> vlastitaMjesta = new ArrayList<>();
     Integer brojacSestica = 0;
+    Boolean bankrotirao = false;
 
     Mapa m = Mapa.getInstance();
     GeneratorBrojeva gb = GeneratorBrojeva.getInstance();
 
     protected void setup() {
         addBehaviour(new OneShotBehaviour() {
-            public void action(){
+            public void action() {
                 addBehaviour(new PrijaviSe());
-            }         
+            }
         });
         MessageTemplate query = MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF);
         addBehaviour(new CyclicBehaviour(this) {
@@ -42,6 +43,7 @@ public class Igrac1 extends Agent {
                     if (msg.getContent().contains("Naplata")) {
                         addBehaviour(new PrihvatiNaplatu(msg));
                     } else {
+                        provjeriIgrace();
                         System.out.println("Ja sam: " + getAID().getLocalName() + ". Na računu imam: " + novci);
                         addBehaviour(new IgrajMonopoly());
                     }
@@ -50,7 +52,7 @@ public class Igrac1 extends Agent {
             }
         });
     }
-    
+
     public class IgrajMonopoly extends SequentialBehaviour {
 
         public IgrajMonopoly() {
@@ -58,7 +60,7 @@ public class Igrac1 extends Agent {
 
         @Override
         public void onStart() {
-            if (stop == 0) {
+            if (stop == 0 && !bankrotirao) {
                 int kockica = gb.baciKockicu();
                 if (kockica == 6) {
                     brojacSestica++;
@@ -98,7 +100,7 @@ public class Igrac1 extends Agent {
         }
 
         public void noviKrug() {
-            novci += 5000;
+            novci += 3000;
             System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
         }
 
@@ -147,7 +149,7 @@ public class Igrac1 extends Agent {
 
         public void platiPosjetu(Polje polje) {
             if (novci < polje.getIznosNaplate()) {
-                System.out.println("Stanje na racunu: " + novci);
+                System.out.println("Stanje na racunu: " + novci + ", iznos naplate: " + polje.getIznosNaplate());
                 bankrot();
             } else {
                 novci -= polje.getIznosNaplate();
@@ -200,14 +202,14 @@ public class Igrac1 extends Agent {
                     if (sansa.getVrijednost() < 0) {
                         Banka.novci += Math.abs(sansa.getVrijednost());
                         novci -= Math.abs(sansa.getVrijednost());
-                        if (novci <= 0) {
-                            System.out.println("Novo stanje na racunu: " + novci);
+                        System.out.println("Novo stanje na racunu: " + novci);
+                        if (novci <= 0) {                           
                             bankrot();
                         }
                     } else {
                         novci += sansa.getVrijednost();
                         System.out.println("Novo stanje na racunu: " + novci);
-                    }                  
+                    }
                     break;
             }
         }
@@ -216,6 +218,8 @@ public class Igrac1 extends Agent {
             System.out.println("BANKROTIRAO");
             Banka.igrac.remove(Banka.trenutniIgrac);
             Banka.trenutniIgrac--;
+            bankrotirao = true;
+            doDelete();
         }
 
         public void preskok() {
@@ -240,7 +244,7 @@ public class Igrac1 extends Agent {
         public void sljedeciIgrac() {
             System.out.println("gotov sam -> moze sljedeci");
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
-            if(Banka.trenutniIgrac >= Banka.igrac.size()-1){
+            if (Banka.trenutniIgrac >= Banka.igrac.size() - 1) {
                 Banka.trenutniIgrac = 0;
             } else {
                 Banka.trenutniIgrac++;
@@ -257,22 +261,22 @@ public class Igrac1 extends Agent {
             send(poruka);
         }
     }
-    
+
     public class PrihvatiNaplatu extends SequentialBehaviour {
-        
+
         ACLMessage msg;
 
         public PrihvatiNaplatu(ACLMessage msg) {
             this.msg = msg;
         }
-        
+
         @Override
         public void onStart() {
-           Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ")+1, msg.getContent().length())); 
-           novci += iznos;
-        }   
+            Integer iznos = Integer.parseInt(msg.getContent().substring(msg.getContent().lastIndexOf(" ") + 1, msg.getContent().length()));
+            novci += iznos;
+        }
     }
-    
+
     public class PrijaviSe extends SequentialBehaviour {
 
         @Override
@@ -281,12 +285,20 @@ public class Igrac1 extends Agent {
             poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
             poruka.setContent("Prijavljujem se u igru: " + dajIme());
             send(poruka);
-        } 
+        }
+    }
+
+    public String dajIme() {
+        return getAID().getLocalName();
     }
     
-     public String dajIme() {
-            return getAID().getLocalName();
+    public void provjeriIgrace(){
+        if(Banka.igrac.size()==1){
+            System.out.println("POBJEDNIK: " + dajIme());
+            doDelete();
+            System.exit(0);
         }
+    }
 
     public long getNovci() {
         return novci;
