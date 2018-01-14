@@ -100,8 +100,13 @@ public class Igrac1 extends Agent {
         }
 
         public void noviKrug() {
-            novci += 3000;
-            System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
+            if(Banka.brojKrugova != 0){
+                novci += 3000;
+                System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
+                Banka.brojKrugova--;
+            } else {
+                System.out.println("Krecem u novi krug. Nema vise novaca u banci. Sada imam ukupno: " + novci);
+            }      
         }
 
         public void provjeriPolje(Polje polje) {
@@ -203,7 +208,7 @@ public class Igrac1 extends Agent {
                         Banka.novci += Math.abs(sansa.getVrijednost());
                         novci -= Math.abs(sansa.getVrijednost());
                         System.out.println("Novo stanje na racunu: " + novci);
-                        if (novci <= 0) {                           
+                        if (novci <= 0) {
                             bankrot();
                         }
                     } else {
@@ -219,6 +224,7 @@ public class Igrac1 extends Agent {
             Banka.igrac.remove(Banka.trenutniIgrac);
             Banka.trenutniIgrac--;
             bankrotirao = true;
+            vratiMjesta();
             doDelete();
         }
 
@@ -254,7 +260,7 @@ public class Igrac1 extends Agent {
             poruka.setContent(sljedeciIgrac + ", ja sam zavrsio. Mozes bacati kockicu. " + dajIme());
             System.out.println("------------------------------------------------------------------------");
             try {
-                sleep(4000);
+                sleep(1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -291,14 +297,24 @@ public class Igrac1 extends Agent {
     public String dajIme() {
         return getAID().getLocalName();
     }
-    
-    public void provjeriIgrace(){
-        if(Banka.igrac.size()==1){
+
+    public void provjeriIgrace() {
+        if (Banka.igrac.size() == 1) {
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
             poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
             poruka.setContent("Pobjednik");
             send(poruka);
             doDelete();
+        }
+    }
+
+    public void vratiMjesta() {
+        for (Polje mojeMjesto : vlastitaMjesta) {
+            for (Polje polje : m.getMapa()) {
+                if (polje.equals(mojeMjesto)) {
+                    polje.setImeVlasnika(null);
+                }
+            }
         }
     }
 

@@ -100,8 +100,13 @@ public class Igrac3 extends Agent {
         }
 
         public void noviKrug() {
-            novci += 3000;
-            System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
+            if(Banka.brojKrugova != 0){
+                novci += 3000;
+                System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
+                Banka.brojKrugova--;
+            } else {
+                System.out.println("Krecem u novi krug. Nema vise novaca u banci. Sada imam ukupno: " + novci);
+            }      
         }
 
         public void provjeriPolje(Polje polje) {
@@ -206,10 +211,10 @@ public class Igrac3 extends Agent {
                         if (novci <= 0) {
                             bankrot();
                         }
-                    } else {
+                    } else {                      
                         novci += sansa.getVrijednost();
-                    }
-                    System.out.println("Novo stanje na racunu: " + novci);
+                        System.out.println("Novo stanje na racunu: " + novci);
+                    }                   
                     break;
             }
         }
@@ -219,6 +224,7 @@ public class Igrac3 extends Agent {
             Banka.igrac.remove(Banka.trenutniIgrac);
             Banka.trenutniIgrac--;
             bankrotirao = true;
+            vratiMjesta();
             doDelete();
         }
 
@@ -304,6 +310,16 @@ public class Igrac3 extends Agent {
             poruka.setContent("Pobjednik");
             send(poruka);
             doDelete();
+        }
+    }
+
+    public void vratiMjesta() {
+        for (Polje mojeMjesto : vlastitaMjesta) {
+            for (Polje polje : m.getMapa()) {
+                if (polje.equals(mojeMjesto)) {
+                    polje.setImeVlasnika(null);
+                }
+            }
         }
     }
 

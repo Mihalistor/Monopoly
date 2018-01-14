@@ -26,6 +26,8 @@ public class Banka extends Agent {
     public static Integer novci = 0;
     public static List<String> igrac = new ArrayList<>();
     public static int trenutniIgrac = 0;
+    public static int brojKrugova = 0;
+    Mapa m = Mapa.getInstance();
 
     protected void setup() {
         Mapa mapa = Mapa.getInstance();
@@ -49,6 +51,7 @@ public class Banka extends Agent {
         }
 
         System.out.println("Broj prijavljenih igrača: " + igrac.size());
+        brojKrugova = igrac.size() * 5;
         System.out.println("POCETAK IGRE");
         ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
         poruka.addReceiver(new AID(igrac.get(trenutniIgrac), AID.ISLOCALNAME));
@@ -61,7 +64,7 @@ public class Banka extends Agent {
                 ACLMessage msg = receive(query);
                 if (msg != null) {
                     if (msg.getContent().contains("Pobjednik")) {
-                        System.out.println(msg.getContent() + ": " + msg.getSender().getLocalName());
+                        System.out.println("OBAVIJEST BANKE: " + msg.getContent() + ": " + msg.getSender().getLocalName());
                         System.out.println("KRAJ IGRE");
                         doDelete();
                         System.exit(0);
