@@ -45,11 +45,13 @@ public class Mapa {
                     pb.setCijena(Integer.parseInt(zapis[3]));
                     pb.setIdGrupe(Integer.parseInt(zapis[4]));
                     pb.setIznosNaplate(Integer.parseInt(zapis[5]));
+                    pb.setImeVlasnik("");
                     mapa.add(pb.build());
                 } else if (zapis[0].equals("2")) {
                     PoljeBuilder pb = new PoljeBuilderImpl();
                     pb.setIdPolja(Integer.parseInt(zapis[1]));
                     pb.setNaziv(zapis[2]);
+                    pb.setImeVlasnik("");
                     mapa.add(pb.build());
                 }
             }

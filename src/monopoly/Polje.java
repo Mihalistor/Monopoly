@@ -15,7 +15,7 @@ public class Polje {
     private String naziv;
     private Integer cijena;
     private String imeVlasnika;
-    private Integer idGrupe;
+    private Integer idGrupe = 0;
     private Integer sansa;
     private Integer iznosNaplate;
 

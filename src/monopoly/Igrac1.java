@@ -80,7 +80,9 @@ public class Igrac1 extends Agent {
                     sljedeciIgrac();
                 }
             } else {
-                System.out.println("Pauziram jos: " + stop + " krug/a");
+                if(!bankrotirao){
+                   System.out.println("Pauziram jos: " + stop + " krug/a"); 
+                }                
                 stop--;
                 sljedeciIgrac();
             }
@@ -100,17 +102,17 @@ public class Igrac1 extends Agent {
         }
 
         public void noviKrug() {
-            if(Banka.brojKrugova != 0){
+            if (Banka.brojKrugova != 0) {
                 novci += 3000;
                 System.out.println("Krecem u novi krug. Sada imam ukupno: " + novci);
                 Banka.brojKrugova--;
             } else {
                 System.out.println("Krecem u novi krug. Nema vise novaca u banci. Sada imam ukupno: " + novci);
-            }      
+            }
         }
 
         public void provjeriPolje(Polje polje) {
-            if (polje.getIdGrupe() != null) {
+            if (polje.getIdGrupe() != 0) {
                 provjeriMjesto(polje);
             } else {
                 provjeriNeMjesto(polje);
@@ -118,7 +120,7 @@ public class Igrac1 extends Agent {
         }
 
         public void provjeriMjesto(Polje polje) {
-            if (polje.getImeVlasnika() == null) {
+            if (polje.getImeVlasnika().equals("")) {
                 System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
                 if (provjeriNovcanik(polje)) {
                     kupiMjesto(polje);
@@ -154,14 +156,59 @@ public class Igrac1 extends Agent {
 
         public void platiPosjetu(Polje polje) {
             if (novci < polje.getIznosNaplate()) {
-                System.out.println("Stanje na racunu: " + novci + ", iznos naplate: " + polje.getIznosNaplate());
+                System.out.println("Stanje na racunu: " + novci + ", minimalni iznos naplate: " + polje.getIznosNaplate());
                 bankrot();
             } else {
-                novci -= polje.getIznosNaplate();
-                System.out.println("Platio sam posjetu od: " + polje.getIznosNaplate() + ", igraču: " + polje.getImeVlasnika());
+                Boolean provjera = provjeriGrupu(polje.getIdGrupe(), polje.getImeVlasnika());
+                Integer iznosNaplate = 0;
+                if (provjera) {
+                    System.out.println("vlasnik IMA sve iz grupe - dodatno placanje: 500");
+                    iznosNaplate = polje.getIznosNaplate() + 500;
+                    novci -= iznosNaplate;
+                    if (novci < 0) {
+                        bankrot();
+                    }
+                } else {
+                    System.out.println("vlasnik NEMA sve iz grupe");
+                    iznosNaplate = polje.getIznosNaplate();
+                    novci -= iznosNaplate;
+                }
+                System.out.println("Platio sam posjetu od: " + iznosNaplate + ", igraču: " + polje.getImeVlasnika());
                 System.out.println("Novo stanje na racunu: " + novci);
                 posaljiNovce(polje.getImeVlasnika(), "Naplata " + Integer.toString(polje.getIznosNaplate()));
             }
+        }
+
+        public Boolean provjeriGrupu(Integer grupa, String vlasnik) {
+            Boolean check = false;
+            int index = 0;
+            int broj = 2;
+            if (grupa == 3) {
+                //provjera kolodvora
+                if ((m.getMapa().get(4).getImeVlasnika().equals(vlasnik)) && (m.getMapa().get(12).getImeVlasnika().equals(vlasnik))
+                        && (m.getMapa().get(20).getImeVlasnika().equals(vlasnik)) && (m.getMapa().get(28).getImeVlasnika().equals(vlasnik))) {
+                    check = true;
+                }
+            } else {
+                for (Polje p : m.getMapa()) {
+                    if (p.getIdGrupe().equals(grupa)) {
+                        index = p.getIdPolja();
+                        break;
+                    }
+                }
+                if(index == 30) broj = 1;
+                for (int i = index; i <= index + broj; i++) {
+                    if (m.getMapa().get(i).getIdGrupe().equals(grupa)) {
+                        if (m.getMapa().get(i).getImeVlasnika().equals(vlasnik)) {
+                            check = true;
+                        } else {
+                            check = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            return check;
         }
 
         public void posaljiNovce(String vlasnik, String iznos) {
@@ -312,7 +359,7 @@ public class Igrac1 extends Agent {
         for (Polje mojeMjesto : vlastitaMjesta) {
             for (Polje polje : m.getMapa()) {
                 if (polje.equals(mojeMjesto)) {
-                    polje.setImeVlasnika(null);
+                    polje.setImeVlasnika("");
                 }
             }
         }
