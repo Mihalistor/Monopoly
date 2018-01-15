@@ -17,12 +17,12 @@ import java.util.logging.Logger;
  *
  * @author bruno
  */
-public class Igrac2 extends Agent {
+public class AgentIgrac extends Agent {
 
-    private long novci = 15000;
-    private Integer pozicija = 0;
+    public long novci = 15000;
+    public Integer pozicija = 0;
     Integer stop = 0;
-    private List<Polje> vlastitaMjesta = new ArrayList<>();
+    public List<Polje> vlastitaMjesta = new ArrayList<>();
     Integer brojacSestica = 0;
     Boolean bankrotirao = false;
 
@@ -150,22 +150,8 @@ public class Igrac2 extends Agent {
                 System.out.println("Kupio sam mjesto: " + polje.getNaziv());
                 System.out.println("Novo stanje na racunu: " + novci);
             } else {
-                System.out.println("Ne zelim kupovati zbog svoje strategije -> kupujem samo skupo od zatvora");
+                System.out.println("Ne zelim kupovati zbog svoje strategije");
             }
-        }
-
-        public Boolean strategija(Polje polje) {
-            // strategija: kupujem sve skupo -> od pozicije zatvora do kraja
-            if (polje.getIdPolja() > 16 && polje.getIdPolja() <= 31) {
-                return true;
-            }
-            if (novci < 2000) {
-                return false;
-            }
-            if (Banka.igrac.size() == 2) {
-                return true;
-            }
-            return false;
         }
 
         public void posjetiSvojeMjesto(Polje polje) {
@@ -250,7 +236,7 @@ public class Igrac2 extends Agent {
             try {
                 sleep(300);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -345,7 +331,7 @@ public class Igrac2 extends Agent {
             try {
                 sleep(1000);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Igrac2.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ex);
             }
             send(poruka);
         }
@@ -390,7 +376,16 @@ public class Igrac2 extends Agent {
             doDelete();
         }
     }
-
+    
+     public Boolean strategija(Polje polje) {
+            // strategija: kupujem sve na kaj stanem
+            System.out.println("MALA");
+            if (novci < 2000) {
+                return false;
+            }
+            return true;
+        }
+     
     public void vratiMjesta() {
         for (Polje mojeMjesto : vlastitaMjesta) {
             for (Polje polje : m.getMapa()) {
