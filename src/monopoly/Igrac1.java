@@ -80,9 +80,9 @@ public class Igrac1 extends Agent {
                     sljedeciIgrac();
                 }
             } else {
-                if(!bankrotirao){
-                   System.out.println("Pauziram jos: " + stop + " krug/a"); 
-                }                
+                if (!bankrotirao) {
+                    System.out.println("Pauziram jos: " + stop + " krug/a");
+                }
                 stop--;
                 sljedeciIgrac();
             }
@@ -121,15 +121,15 @@ public class Igrac1 extends Agent {
 
         public void provjeriMjesto(Polje polje) {
             if (polje.getImeVlasnika().equals("")) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
                 if (provjeriNovcanik(polje)) {
                     kupiMjesto(polje);
                 }
             } else if (polje.getImeVlasnika().equals(dajIme())) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 posjetiSvojeMjesto(polje);
             } else {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 platiPosjetu(polje);
             }
         }
@@ -143,11 +143,20 @@ public class Igrac1 extends Agent {
         }
 
         public void kupiMjesto(Polje polje) {
-            novci -= polje.getCijena();
-            polje.setImeVlasnika(dajIme());
-            vlastitaMjesta.add(polje);
-            System.out.println("Kupio sam mjesto: " + polje.getNaziv());
-            System.out.println("Novo stanje na racunu: " + novci);
+            if (strategija()) {
+                novci -= polje.getCijena();
+                polje.setImeVlasnika(dajIme());
+                vlastitaMjesta.add(polje);
+                System.out.println("Kupio sam mjesto: " + polje.getNaziv());
+                System.out.println("Novo stanje na racunu: " + novci);
+            } else {
+                System.out.println("Ne zelim kupovati zbog svoje strategije");
+            }
+        }
+
+        public Boolean strategija() {
+            // strategija: kupujem sve na kaj stanem
+            return true;
         }
 
         public void posjetiSvojeMjesto(Polje polje) {
@@ -196,7 +205,9 @@ public class Igrac1 extends Agent {
                         break;
                     }
                 }
-                if(index == 30) broj = 1;
+                if (index == 30) {
+                    broj = 1;
+                }
                 for (int i = index; i <= index + broj; i++) {
                     if (m.getMapa().get(i).getIdGrupe().equals(grupa)) {
                         if (m.getMapa().get(i).getImeVlasnika().equals(vlasnik)) {

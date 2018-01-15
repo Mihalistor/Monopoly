@@ -121,15 +121,15 @@ public class Igrac4 extends Agent {
 
         public void provjeriMjesto(Polje polje) {
             if (polje.getImeVlasnika().equals("")) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
                 if (provjeriNovcanik(polje)) {
                     kupiMjesto(polje);
                 }
             } else if (polje.getImeVlasnika().equals(dajIme())) {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 posjetiSvojeMjesto(polje);
             } else {
-                System.out.println("Dosao sam na: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 platiPosjetu(polje);
             }
         }
@@ -143,11 +143,23 @@ public class Igrac4 extends Agent {
         }
 
         public void kupiMjesto(Polje polje) {
-            novci -= polje.getCijena();
-            polje.setImeVlasnika(dajIme());
-            vlastitaMjesta.add(polje);
-            System.out.println("Kupio sam mjesto: " + polje.getNaziv());
-            System.out.println("Novo stanje na racunu: " + novci);
+            if (strategija(polje)) {
+                novci -= polje.getCijena();
+                polje.setImeVlasnika(dajIme());
+                vlastitaMjesta.add(polje);
+                System.out.println("Kupio sam mjesto: " + polje.getNaziv());
+                System.out.println("Novo stanje na racunu: " + novci);
+            } else {
+                System.out.println("Ne zelim kupovati zbog svoje strategije -> samo kupujem grupe 3,6,7");
+            }
+        }
+
+        public Boolean strategija(Polje polje) {
+            // strategija: kupujem samo grupe 3,6,7
+            if(polje.getIdGrupe() == 3 || polje.getIdGrupe() == 6 || polje.getIdGrupe() == 7){
+                return true;
+            }
+            return false;
         }
 
         public void posjetiSvojeMjesto(Polje polje) {
