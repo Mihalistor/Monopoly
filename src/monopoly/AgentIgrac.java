@@ -378,11 +378,6 @@ public class AgentIgrac extends Agent {
     }
     
      public Boolean strategija(Polje polje) {
-            // strategija: kupujem sve na kaj stanem
-            System.out.println("MALA");
-            if (novci < 2000) {
-                return false;
-            }
             return true;
         }
      
