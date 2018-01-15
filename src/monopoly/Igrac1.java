@@ -61,7 +61,7 @@ public class Igrac1 extends Agent {
         @Override
         public void onStart() {
             if (stop == 0 && !bankrotirao) {
-                int kockica = gb.baciKockicu();
+                int kockica = 1;
                 if (kockica == 6) {
                     brojacSestica++;
                 }
@@ -121,15 +121,15 @@ public class Igrac1 extends Agent {
 
         public void provjeriMjesto(Polje polje) {
             if (polje.getImeVlasnika().equals("")) {
-                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() + ". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - nema vlasnika");
                 if (provjeriNovcanik(polje)) {
                     kupiMjesto(polje);
                 }
             } else if (polje.getImeVlasnika().equals(dajIme())) {
-                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() + ". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 posjetiSvojeMjesto(polje);
             } else {
-                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() +". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
+                System.out.println("Dosao sam na grupa: " + polje.getIdGrupe() + ". Naziv: " + polje.getNaziv() + ". Cijena: " + polje.getCijena() + " - vlasnik: " + polje.getImeVlasnika());
                 platiPosjetu(polje);
             }
         }
@@ -156,6 +156,9 @@ public class Igrac1 extends Agent {
 
         public Boolean strategija() {
             // strategija: kupujem sve na kaj stanem
+            if (novci < 2000) {
+                return false;
+            }
             return true;
         }
 
@@ -171,8 +174,9 @@ public class Igrac1 extends Agent {
                 Boolean provjera = provjeriGrupu(polje.getIdGrupe(), polje.getImeVlasnika());
                 Integer iznosNaplate = 0;
                 if (provjera) {
-                    System.out.println("vlasnik IMA sve iz grupe - dodatno placanje: 500");
-                    iznosNaplate = polje.getIznosNaplate() + 500;
+                    int dodatak = dodatakZaGrupu(polje.getIdGrupe());
+                    System.out.println("vlasnik IMA sve iz grupe - dodatno placanje: " + dodatak);
+                    iznosNaplate = polje.getIznosNaplate() + dodatak;
                     novci -= iznosNaplate;
                     if (novci < 0) {
                         bankrot();
@@ -186,6 +190,16 @@ public class Igrac1 extends Agent {
                 System.out.println("Novo stanje na racunu: " + novci);
                 posaljiNovce(polje.getImeVlasnika(), "Naplata " + Integer.toString(polje.getIznosNaplate()));
             }
+        }
+
+        public int dodatakZaGrupu(Integer idGrupe) {
+            int dodatak = 0;
+            if (idGrupe <= 3) {
+                dodatak = 200 + idGrupe * 100;
+            } else {
+                dodatak = idGrupe * 150;
+            }
+            return dodatak;
         }
 
         public Boolean provjeriGrupu(Integer grupa, String vlasnik) {
@@ -227,6 +241,11 @@ public class Igrac1 extends Agent {
             poruka.addReceiver(new AID(vlasnik, AID.ISLOCALNAME));
             poruka.setContent(iznos);
             send(poruka);
+            try {
+                sleep(300);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         public void provjeriNeMjesto(Polje polje) {
