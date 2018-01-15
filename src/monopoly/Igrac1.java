@@ -336,7 +336,7 @@ public class Igrac1 extends Agent {
         public void onStart() {
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
             poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
-            poruka.setContent("Prijavljujem se u igru: " + dajIme());
+            poruka.setContent("Prijavljujem se u igru: " + dajIme() + ", redosljed kockica: " + gb.baciKockicu());
             send(poruka);
         }
     }

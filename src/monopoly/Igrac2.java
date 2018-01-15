@@ -309,7 +309,7 @@ public class Igrac2 extends Agent {
             try {
                 sleep(1000);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Igrac1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Igrac2.class.getName()).log(Level.SEVERE, null, ex);
             }
             send(poruka);
         }
@@ -336,7 +336,7 @@ public class Igrac2 extends Agent {
         public void onStart() {
             ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
             poruka.addReceiver(new AID("Banka", AID.ISLOCALNAME));
-            poruka.setContent("Prijavljujem se u igru: " + dajIme());
+            poruka.setContent("Prijavljujem se u igru: " + dajIme() + ", redosljed kockica: " + gb.baciKockicu());
             send(poruka);
         }
     }

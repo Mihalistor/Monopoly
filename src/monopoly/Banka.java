@@ -13,6 +13,7 @@ import jade.lang.acl.MessageTemplate;
 import jade.wrapper.StaleProxyException;
 import static java.lang.Thread.sleep;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +41,9 @@ public class Banka extends Agent {
             ACLMessage msg = receive(query);
             if (msg != null) {
                 System.out.println("Dosla je prijava: " + msg.getContent());
-                igrac.add(msg.getContent().substring(msg.getContent().lastIndexOf(" ") + 1, msg.getContent().length()));
+                String naziv = msg.getContent().substring(msg.getContent().indexOf(":") + 2, msg.getContent().lastIndexOf(","));
+                String kockica = msg.getContent().substring(msg.getContent().lastIndexOf(":") + 2, msg.getContent().length());
+                igrac.add(kockica + naziv);
             }
             try {
                 sleep(1000);
@@ -49,9 +52,22 @@ public class Banka extends Agent {
             }
             counter++;
         }
-
+        Collections.sort(igrac, Collections.reverseOrder());
+        int broj = igrac.size();
+        int i = 0;
+        while(i <= broj-1){
+            igrac.add(igrac.get(0).substring(1, igrac.get(0).length())); 
+            igrac.remove(0);
+            i++;
+        }
         System.out.println("Broj prijavljenih igrača: " + igrac.size());
         brojKrugova = igrac.size() * 5;
+        System.out.println("Redosljed igre: ");
+        int pozicija = 1;
+        for(String igraci : igrac){
+            System.out.println(pozicija + ". " + igraci);
+            pozicija++;
+        }
         System.out.println("POCETAK IGRE");
         ACLMessage poruka = new ACLMessage(ACLMessage.QUERY_REF);
         poruka.addReceiver(new AID(igrac.get(trenutniIgrac), AID.ISLOCALNAME));
